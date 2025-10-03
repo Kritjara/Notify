@@ -23,18 +23,34 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    # 3. ВОССТАНОВЛЕНИЕ NuGet пакетов (ДОБАВЛЕНО)
+    # 3. Извлечение версии из тега
+    - name: Extract version from tag
+      id: get_version
+      run: |
+        # Убираем 'v' из начала тега (v1.1.0 ? 1.1.0)
+        VERSION="${GITHUB_REF#refs/tags/v}"
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "?? Extracted version: $VERSION"
+
+    # 4. ВОССТАНОВЛЕНИЕ NuGet пакетов
     - name: Restore
       run: dotnet restore Kritjara.Collections.Notify.csproj
 
-    # 4. Build project
+    # 5. Build project
     - name: Build
-      run: dotnet build Kritjara.Collections.Notify.csproj --configuration Release --no-restore
+      run: dotnet build Kritjara.Collections.Notify.csproj --configuration Release --no-restore -p:Version=${{ steps.get_version.outputs.VERSION }}
 
-    # 5. Create NuGet package
+    # 6. Create NuGet package
     - name: Pack
-      run: dotnet pack Kritjara.Collections.Notify.csproj --configuration Release --no-build --output ./nupkg
+      run: dotnet pack Kritjara.Collections.Notify.csproj --configuration Release --no-build -p:Version=${{ steps.get_version.outputs.VERSION }} --output ./nupkg
 
-    # 6. Publish to GitHub Packages
+    # 7. Publish to GitHub Packages
     - name: Publish to GitHub Packages
       run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_PUBLISH_TOKEN }} --source "https://nuget.pkg.github.com/Kritjara/index.json" --skip-duplicate
+
+    # 8. Подтверждение публикации (опционально)
+    - name: Verify publication
+      run: |
+        echo "? Package version ${{ steps.get_version.outputs.VERSION }} published successfully!"
+        echo "?? Package: Kritjara.Collections.Notify"
+        echo "??? Version: ${{ steps.get_version.outputs.VERSION }}"
