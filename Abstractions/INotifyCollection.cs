@@ -4,7 +4,7 @@ namespace Kritjara.Collections.Notify;
 
 /// <summary>Представляет коллекцию, оповещающую о добавлении/удалении ее элементов.</summary>
 /// <typeparam name="T">Тип объектов, содержащихся в коллекции.</typeparam>
-[CollectionBuilder(typeof(NotifyFactory), "CreateNotifyCollection")]
+[CollectionBuilder(typeof(NotifyFactory), nameof(NotifyFactory.CreateNotifyCollection))]
 public interface INotifyCollection<T> : INotify<T>, IList<T>, IEnumerable<T> 
 {       
 

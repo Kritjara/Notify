@@ -18,6 +18,11 @@
 	<RepositoryType>git</RepositoryType>
 	  
 	<PackageOutputPath>./nupkg</PackageOutputPath>
+
+	<!-- Добавьте эти строки для документации -->
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<IncludeSymbols>true</IncludeSymbols>
+	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 	
 </Project>

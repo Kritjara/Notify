@@ -5,10 +5,10 @@ using System.Runtime.CompilerServices;
 
 namespace Kritjara.Collections.Notify;
 
-/// <summary>Представляет <see cref="IFullList{T}"/>, оповещающий о добавлении/удалении элементов.</summary>
+/// <summary>Представляет <see cref="IList{T}"/>, оповещающий о добавлении/удалении/перемещении элементов.</summary>
 /// <typeparam name="T">Тип объектов, содержащихся в коллекции.</typeparam>
-[CollectionBuilder(typeof(NotifyFactory), "CreateNotifyCollection")]
-public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList where T : notnull
+[CollectionBuilder(typeof(NotifyFactory), nameof(NotifyFactory.CreateNotifyCollection))]
+public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList 
 {
     public event ItemAddedEventHandler<T>? ItemAdded;
     public event ItemMovedEventHandler<T>? ItemMoved;
@@ -35,29 +35,23 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
     }
 
     ///<summary>Инициализирует новый экземпляр класса <see cref="NotifyCollection{T}"/>.</summary>
-    public NotifyCollection(int capacity) :this(new List<T>(capacity))
-    {        
+    public NotifyCollection(int capacity)
+    {
+        Items = new List<T>(capacity);
     }
 
     ///<summary>Инициализирует новый экземпляр класса <see cref="NotifyCollection{T}"/>.</summary>
-    public NotifyCollection(IEnumerable<T> items) :this(new List<T>(items))
+    public NotifyCollection(IEnumerable<T> items)
     {
-       
+        Items = [.. items];
     }
 
     ///<summary>Инициализирует новый экземпляр класса <see cref="NotifyCollection{T}"/>.</summary>
-    public NotifyCollection(ReadOnlySpan<T> items) : this((List<T>)[.. items])
+    public NotifyCollection(ReadOnlySpan<T> items)
     {
-        
-    }
-    ///<summary>Инициализирует новый экземпляр класса <see cref="NotifyCollection{T}"/>.</summary>
-    /// <param name="list"></param>
-    protected NotifyCollection(List<T> list)
-    {
-        Items = list;
+        Items = [.. items];
     }
 
-    internal static NotifyCollection<T> Create(List<T> list) => new NotifyCollection<T>(list);
 
     /// <summary>Получает или задает элемент элемент по указанному индексу.</summary>
     /// <param name="index">Индекс элемента.</param>
@@ -144,7 +138,7 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         NotifyCollection<TOutput> newColl = new NotifyCollection<TOutput>()
         {
             Items = Items.ConvertAll(converter)
-        };        
+        };
         return newColl;
     }
 
