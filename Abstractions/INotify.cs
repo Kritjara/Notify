@@ -1,6 +1,6 @@
 ﻿namespace Kritjara.Collections.Notify;
 
-/// <summary>Представляет события, оповещающие об изменении состава элементов коллекции.</summary>
+/// <summary>Предоставляет события, оповещающие об изменении состава элементов коллекции.</summary>
 /// <typeparam name="T">Тип объектов, содержащихся в коллекции.</typeparam>
 public interface INotify<out T>
 {

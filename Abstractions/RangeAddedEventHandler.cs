@@ -8,10 +8,13 @@ public delegate void RangeAddedEventHandler<in T>(object sender, IRangeAddedEven
 /// <summary>Представляет данные события <see cref="INotify{T}.RangeAdded"/>.</summary>
 public interface IRangeAddedEventArgs<out T>
 {
+
     /// <summary>Добавленный в коллекцию диапазон элементов.</summary>
     IReadOnlyList<T> AddedItems { get; }
+  
     /// <summary>Индекс диапазона элементов.</summary>
     int Index { get; }
+
 }
 
 /// <inheritdoc cref="IRangeAddedEventArgs{T}"/>
@@ -19,6 +22,11 @@ public interface IRangeAddedEventArgs<out T>
 /// <param name="index">Индекс диапазона элементов.</param>
 public class RangeAddedEventArgs<T>(IReadOnlyList<T> addedItems, int index) : EventArgs, IRangeAddedEventArgs<T>
 {
+
+    /// <inheritdoc/>
     public IReadOnlyList<T> AddedItems { get; } = addedItems;
+
+    /// <inheritdoc/>
     public int Index { get; } = index;
+
 }

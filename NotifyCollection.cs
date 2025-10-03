@@ -8,24 +8,10 @@ namespace Kritjara.Collections.Notify;
 /// <summary>Представляет <see cref="IList{T}"/>, оповещающий о добавлении/удалении/перемещении элементов.</summary>
 /// <typeparam name="T">Тип объектов, содержащихся в коллекции.</typeparam>
 [CollectionBuilder(typeof(NotifyFactory), nameof(NotifyFactory.CreateNotifyCollection))]
-public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList 
+public class NotifyCollection<T> : NotifyBase<T>, INotifyCollection<T>, IReadOnlyList<T>, IList 
 {
-    public event ItemAddedEventHandler<T>? ItemAdded;
-    public event ItemMovedEventHandler<T>? ItemMoved;
-    public event ItemRemovedEventHandler<T>? ItemRemoved;
-    public event ItemReplacedEventHandler<T>? ItemReplaced;
-    public event RangeAddedEventHandler<T>? RangeAdded;
-    public event RangeRemovedEventHandler<T>? RangeRemoved;
-    public event CollectionResetEventHandler<T>? Reset;
 
-    protected virtual void RaiseItemAdded(int index, T newItem) => ItemAdded?.Invoke(this, new ItemAddedEventArgs<T>(newItem, index));
-    protected virtual void RaiseRangeAdded(int index, ImmutableList<T> newItems) => RangeAdded?.Invoke(this, new RangeAddedEventArgs<T>(newItems, index));
-    protected virtual void RaiseItemRemoved(int index, T removedItem) => ItemRemoved?.Invoke(this, new ItemRemovedEventArgs<T>(removedItem, index));
-    protected virtual void RaiseRangeRemoved(int index, ImmutableList<T> removedItems) => RangeRemoved?.Invoke(this, new RangeRemovedEventArgs<T>(removedItems, index));
-    protected virtual void RaiseItemReplaced(int index, T oldItem, T newItem) => ItemReplaced?.Invoke(this, new ItemReplacedEventArgs<T>(oldItem, newItem, index));
-    protected virtual void RaiseItemMoved(int oldIndex, int newIndex, T movedItem) => ItemMoved?.Invoke(this, new ItemMovedEventArgs<T>(oldIndex, newIndex, movedItem));
-    protected virtual void RaiseCollectionCleared(ImmutableList<T> removedItems) => Reset?.Invoke(this, new CollectionResetEventArgs<T>(removedItems));
-
+    /// <summary>Список элементов.</summary>
     protected internal List<T> Items { get; set; }
 
     ///<summary>Инициализирует новый экземпляр класса <see cref="NotifyCollection{T}"/>.</summary>
@@ -65,6 +51,7 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         }
     }
 
+    /// <inheritdoc/>
     public virtual void Add(T item)
     {
         int index = Items.Count;
@@ -72,67 +59,87 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
     }
 
 
+    /// <inheritdoc/>
     public virtual void AddRange(IEnumerable<T> items)
     {
         int index = Items.Count;
         OnAddRange(index, [.. items]);
     }
 
+    /// <inheritdoc/>
     public virtual void Insert(int index, T item)
     {
         OnAdd(index, item);
     }
 
 
+    /// <inheritdoc/>
     public void InsertRange(int index, IEnumerable<T> items)
     {
         OnAddRange(index, [.. items]);
     }
 
+    /// <inheritdoc/>
     public void Move(int oldIndex, int newIndex)
     {
         OnMoveItem(oldIndex, newIndex);
     }
 
+    /// <inheritdoc/>
     public virtual bool Remove(T item)
     {
         return OnRemove(item);
     }
 
+    /// <inheritdoc/>
     public virtual void RemoveRange(int index, int count)
     {
         OnRemoveRange(index, count);
     }
 
+    /// <inheritdoc/>
     public void RemoveAt(int index)
     {
         OnRemoveAt(index);
     }
 
+    /// <inheritdoc/>
     public void Clear()
     {
         OnClearItems();
     }
 
+    /// <inheritdoc/>
     public int IndexOf(T item) => Items.IndexOf(item);
 
+    /// <inheritdoc/>
     public bool Contains(T item) => Items.Contains(item);
 
+    /// <inheritdoc/>
     public void CopyTo(T[] array, int arrayIndex)
     {
         Items.CopyTo(array, arrayIndex);
     }
 
+    /// <inheritdoc cref="List{T}.CopyTo(int, T[], int, int)"/>
     public void CopyTo(int index, T[] array, int arrayIndex, int count)
     {
         Items.CopyTo(index, array, arrayIndex, count);
     }
 
+    /// <inheritdoc/>
     public T? Find(Predicate<T> match) => Items.Find(match);
+   
+    /// <inheritdoc cref="List{T}.FindIndex(Predicate{T})"/>
     public int FindIndex(Predicate<T> match) => Items.FindIndex(match);
+
+    /// <inheritdoc cref="List{T}.FindIndex(int, Predicate{T})"/>
     public int FindIndex(int startIndex, Predicate<T> match) => Items.FindIndex(startIndex, match);
+
+    /// <inheritdoc cref="List{T}.FindIndex(int, int, Predicate{T})"/>
     public int FindIndex(int startIndex, int count, Predicate<T> match) => Items.FindIndex(startIndex, count, match);
 
+    /// <inheritdoc cref="List{T}.ConvertAll{TOutput}(Converter{T, TOutput})"/>
     public NotifyCollection<TOutput> ConvertAll<TOutput>(Converter<T, TOutput> converter) where TOutput : notnull
     {
         NotifyCollection<TOutput> newColl = new NotifyCollection<TOutput>()
@@ -142,17 +149,19 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         return newColl;
     }
 
+    /// <inheritdoc/>
     public int Count => Items.Count;
 
     bool ICollection<T>.IsReadOnly => false;
 
+    /// <inheritdoc/>
     public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
 
 
 
-    /// <summary>Заменяет элемент в коллекции и вызывает событие <see cref="ItemReplaced"/>.</summary>
+    /// <summary>Заменяет элемент в коллекции и вызывает событие <see cref="INotify{T}.ItemReplaced"/>.</summary>
     /// <param name="index">Индекс элемента, который будет заменен.</param>
     /// <param name="item">Новый элемент.</param>
     protected virtual void OnReplace(int index, T item)
@@ -162,7 +171,7 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         RaiseItemReplaced(index, oldItem, item);
     }
 
-    /// <summary>Добавляет элемент в коллекцию в указанную позицию и вызывает событие <see cref="ItemAdded"/>.</summary>
+    /// <summary>Добавляет элемент в коллекцию в указанную позицию и вызывает событие <see cref="INotify{T}.ItemAdded"/>.</summary>
     /// <param name="index">Индекс, по которому будет добавлен элемент.</param>
     /// <param name="item">Добавляемый элемент.</param>
     protected virtual void OnAdd(int index, T item)
@@ -171,7 +180,7 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         RaiseItemAdded(index, item);
     }
 
-    /// <summary>Добавялет диапазон элементов в указанную позицию и вызывает событие <see cref="RangeAdded"/>.</summary>
+    /// <summary>Добавялет диапазон элементов в указанную позицию и вызывает событие <see cref="INotify{T}.RangeAdded"/>.</summary>
     /// <param name="index">Индекс, по которому будет добавлен диапазон.</param>
     /// <param name="items">Элементы для добавления в коллекцию.</param>
     protected virtual void OnAddRange(int index, ImmutableList<T> items)
@@ -180,7 +189,7 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         RaiseRangeAdded(index, items);
     }
 
-    /// <summary>Удаляет элемент из коллекции по указанному индексу и вызывает событие <see cref="ItemRemoved"/>.</summary>
+    /// <summary>Удаляет элемент из коллекции по указанному индексу и вызывает событие <see cref="INotify{T}.ItemRemoved"/>.</summary>
     /// <param name="index">Индекс элемента, который требуется удалить</param>
     protected virtual void OnRemoveAt(int index)
     {
@@ -189,7 +198,7 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         RaiseItemRemoved(index, item);
     }
 
-    /// <summary>Удаляет указанный элемент из коллекции и вызывает событие <see cref="ItemRemoved"/>, если элемент присутствовал в коллекици.</summary>
+    /// <summary>Удаляет указанный элемент из коллекции и вызывает событие <see cref="INotify{T}.ItemRemoved"/>, если элемент присутствовал в коллекици.</summary>
     /// <param name="item">Элемент для удаления.</param>
     /// <returns></returns>
     protected virtual bool OnRemove(T item)
@@ -204,7 +213,7 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         return false;
     }
 
-    /// <summary>Удаляет из коллекции диапазон элементов начиная и вызывает событие <see cref="RangeRemoved"/>.</summary>
+    /// <summary>Удаляет из коллекции диапазон элементов начиная и вызывает событие <see cref="INotify{T}.RangeRemoved"/>.</summary>
     /// <param name="index">Отсчитываемый от нуля индекс начала диапазона элементов, которые требуется удалить.</param>
     /// <param name="countToRemove">Количество удаляемых элементов.</param>
     /// <returns></returns>
@@ -216,7 +225,7 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         RaiseRangeRemoved(index, [.. removedItems]);
     }
 
-    /// <summary>Перемещает элемент c указанным индексом в новое место в коллекции и вызывает событие <see cref="ItemMoved"/>.</summary>
+    /// <summary>Перемещает элемент c указанным индексом в новое место в коллекции и вызывает событие <see cref="INotify{T}.ItemMoved"/>.</summary>
     /// <param name="oldIndex">Индекс перемещаемого элемента.</param>
     /// <param name="newIndex">Новое расположение элемента.</param>
     protected virtual void OnMoveItem(int oldIndex, int newIndex)
@@ -229,12 +238,12 @@ public class NotifyCollection<T> : INotifyCollection<T>, IReadOnlyList<T>, IList
         RaiseItemMoved(oldIndex, newIndex, movedItem);
     }
 
-    /// <summary>Удаляет все элементы из коллекции и вызывает событие <see cref="Cleared"/>.</summary>
+    /// <summary>Удаляет все элементы из коллекции и вызывает событие <see cref="INotify{T}.Reset"/>.</summary>
     protected virtual void OnClearItems()
     {
         ImmutableList<T> removedItems = [.. Items];
         Items.Clear();
-        RaiseCollectionCleared(removedItems);
+        RaiseReset(removedItems);
     }
 
 

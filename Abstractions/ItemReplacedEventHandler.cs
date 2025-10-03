@@ -22,7 +22,12 @@ public interface IItemReplacedEventArgs<out T>
 /// <param name="index">Индекс замененного/добавленного элемента.</param>
 public class ItemReplacedEventArgs<T>(T oldItem, T newItem, int index) : EventArgs, IItemReplacedEventArgs<T>
 {
+    /// <inheritdoc/>
     public T OldItem { get; } = oldItem;
+
+    /// <inheritdoc/>
     public T NewItem { get; } = newItem;
+
+    /// <inheritdoc/>
     public int Index { get; } = index;
 }

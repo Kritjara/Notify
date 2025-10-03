@@ -19,6 +19,9 @@ public interface IItemAddedEventArgs<out T>
 /// <param name="index">Индекс добавленного элемента.</param>
 public class ItemAddedEventArgs<T>(T newItem, int index) : EventArgs, IItemAddedEventArgs<T>
 {
+    /// <inheritdoc/>
     public T NewItem { get; } = newItem;
+
+    /// <inheritdoc/>
     public int Index { get; } = index;
 }

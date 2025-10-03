@@ -15,7 +15,7 @@ public interface ICollectionResetEventArgs<out T>
 /// <inheritdoc cref="ICollectionResetEventArgs{T}"/>
 /// <param name="removedItems">Удаленные из коллекции элементы.</param>
 public class CollectionResetEventArgs<T>(IReadOnlyList<T> removedItems) : EventArgs, ICollectionResetEventArgs<T>
-{ 
-    /// <summary>Удаленные из коллекции элементы.</summary>
+{
+    /// <inheritdoc/>
     public IReadOnlyList<T> RemovedItems { get; } = removedItems;
 }

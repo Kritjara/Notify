@@ -5,7 +5,7 @@ namespace Kritjara.Collections.Notify;
 /// <summary>Представляет коллекцию, оповещающую о добавлении/удалении ее элементов.</summary>
 /// <typeparam name="T">Тип объектов, содержащихся в коллекции.</typeparam>
 [CollectionBuilder(typeof(NotifyFactory), nameof(NotifyFactory.CreateNotifyCollection))]
-public interface INotifyCollection<T> : INotify<T>, IList<T>, IEnumerable<T> 
+public interface INotifyCollection<T> : INotify<T>, IList<T>
 {       
 
     /// <summary>Добавляет диапазон элементов в коллекцию.</summary>
@@ -21,10 +21,7 @@ public interface INotifyCollection<T> : INotify<T>, IList<T>, IEnumerable<T>
     /// <param name="oldIndex">Индекс перемещаемого элемента.</param>
     /// <param name="newIndex">Индекс, по которому следует разместить перемещаемый элемент.</param>
     void Move(int oldIndex, int newIndex);
-
-    /// <inheritdoc cref="ICollection{T}.Remove"/>
-    //bool Remove(T item);
-      
+          
     /// <inheritdoc cref="List{T}.RemoveRange(int, int)"/>
     void RemoveRange(int index, int length);
 

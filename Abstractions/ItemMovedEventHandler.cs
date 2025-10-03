@@ -22,7 +22,12 @@ public interface IItemMovedEventArgs<out T>
 /// <param name="movedItem">Перемещенный элемент.</param>
 public class ItemMovedEventArgs<T>(int oldIndex, int newIndex, T movedItem) : EventArgs, IItemMovedEventArgs<T>
 {
+    /// <inheritdoc/>
     public int OldIndex { get; } = oldIndex;
+   
+    /// <inheritdoc/>
     public int NewIndex { get; } = newIndex;
+    
+    /// <inheritdoc/>
     public T MovedItem { get; } = movedItem;
 }
