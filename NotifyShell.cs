@@ -1,10 +1,11 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 
-namespace Kritjara.Collections.Notify;
+namespace Kritjara.Collections;
 
 /// <summary>Представляет коллекцию только для чтения с оповещением о добавлении/удалении элементов.</summary>
 /// <typeparam name="T">Тип объектов, содержащихся в коллекции.</typeparam>
-internal class ReadOnlyNotifyCollectionShell<T> : NotifyBase<T>, IReadOnlyNotifyCollection<T>
+internal class NotifyShell<T> : NotifyBase<T>, IReadOnlyNotifyCollection<T>
 {
     private readonly Func<int> func_getcount;
     private readonly Func<int, T> func_getitem;
@@ -18,9 +19,7 @@ internal class ReadOnlyNotifyCollectionShell<T> : NotifyBase<T>, IReadOnlyNotify
       
     private int ReadOnlyCollection_GetCount() => ((IReadOnlyCollection<T>)Items).Count;
 
-    private int Collection_GetCount() => ((ICollection<T>)Items).Count;
-     
-    private int Enumerable_GetCount() => ((IEnumerable<T>)Items).Count();
+    private int Collection_GetCount() => ((ICollection<T>)Items).Count;     
     private T Enumerable_GetItem(int index) => ((IEnumerable<T>)Items).ElementAt(index);
 
 
@@ -33,8 +32,10 @@ internal class ReadOnlyNotifyCollectionShell<T> : NotifyBase<T>, IReadOnlyNotify
     /// Инициализирует новый только для чтения экземпляр коллекции с оповещениями <see cref="INotify{T}"/>"/>
     /// </summary>
     /// <param name="items">Основной источник элементов</param>
-    public ReadOnlyNotifyCollectionShell(INotify<T> items)
+    public NotifyShell(INotify<T> items)
     {
+        Debug.Assert(items is not INotifyCollection<T>);
+
         if (items is IReadOnlyList<T>)
         {
             func_getcount = ReadOnlyList_GetCount;
@@ -55,11 +56,6 @@ internal class ReadOnlyNotifyCollectionShell<T> : NotifyBase<T>, IReadOnlyNotify
             func_getcount = Collection_GetCount;
             func_getitem = Enumerable_GetItem;
         }
-        else if (items is IEnumerable<T>)
-        {
-            func_getcount = Enumerable_GetCount;
-            func_getitem = Enumerable_GetItem;
-        }
         else
         {
             throw new ArgumentException($"{nameof(items)} не является коллекцией элементов типа {typeof(T)}", nameof(items));
@@ -71,7 +67,7 @@ internal class ReadOnlyNotifyCollectionShell<T> : NotifyBase<T>, IReadOnlyNotify
         Items.RangeRemoved += Items_RangeRemoved;
         Items.ItemReplaced += Source_ItemReplaced;
         Items.ItemMoved += Source_ItemMoved;
-        Items.Reset += Source_Cleared;
+        Items.CollectionCleared += Source_Cleared;
     }
 
     private void Source_ItemAdded(object sender, IItemAddedEventArgs<T> e) => RaiseItemAdded(e);
@@ -80,7 +76,7 @@ internal class ReadOnlyNotifyCollectionShell<T> : NotifyBase<T>, IReadOnlyNotify
     private void Items_RangeRemoved(object sender, IRangeRemovedEventArgs<T> e) => RaiseRangeRemoved(e);
     private void Source_ItemReplaced(object sender, IItemReplacedEventArgs<T> e) => RaiseItemReplaced(e);
     private void Source_ItemMoved(object sender, IItemMovedEventArgs<T> e) => RaiseItemMoved(e);
-    private void Source_Cleared(object sender, ICollectionResetEventArgs<T> e) => RaiseReset(e);
+    private void Source_Cleared(object sender, ICollectionClearedEventArgs<T> e) => RaiseCollectionCleared(e);
 
     /// <inheritdoc/>
     public T this[int index] => func_getitem(index);

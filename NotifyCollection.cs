@@ -1,18 +1,16 @@
 ﻿using System.Collections;
-using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
+using System.ComponentModel;
 
-namespace Kritjara.Collections.Notify;
+namespace Kritjara.Collections;
 
 /// <summary>Представляет <see cref="IList{T}"/>, оповещающий о добавлении/удалении/перемещении элементов.</summary>
 /// <typeparam name="T">Тип объектов, содержащихся в коллекции.</typeparam>
-[CollectionBuilder(typeof(NotifyFactory), nameof(NotifyFactory.CreateNotifyCollection))]
-public class NotifyCollection<T> : NotifyBase<T>, INotifyCollection<T>, IReadOnlyList<T>, IList 
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(NotifyFactory), nameof(NotifyFactory.CreateNotifyCollection))]
+public class NotifyCollection<T> : NotifyBase<T>, INotifyCollection<T>, IList<T>, IReadOnlyList<T>, IList 
 {
 
     /// <summary>Список элементов.</summary>
-    protected internal List<T> Items { get; set; }
+    protected List<T> Items;
 
     ///<summary>Инициализирует новый экземпляр класса <see cref="NotifyCollection{T}"/>.</summary>
     public NotifyCollection()
@@ -110,6 +108,13 @@ public class NotifyCollection<T> : NotifyBase<T>, INotifyCollection<T>, IReadOnl
     }
 
     /// <inheritdoc/>
+    public void Reset(IEnumerable<T> enumerable) 
+    {
+        OnClearItems();
+        OnAddRange(0, [..enumerable]);
+    }
+
+    /// <inheritdoc/>
     public int IndexOf(T item) => Items.IndexOf(item);
 
     /// <inheritdoc/>
@@ -183,7 +188,7 @@ public class NotifyCollection<T> : NotifyBase<T>, INotifyCollection<T>, IReadOnl
     /// <summary>Добавялет диапазон элементов в указанную позицию и вызывает событие <see cref="INotify{T}.RangeAdded"/>.</summary>
     /// <param name="index">Индекс, по которому будет добавлен диапазон.</param>
     /// <param name="items">Элементы для добавления в коллекцию.</param>
-    protected virtual void OnAddRange(int index, ImmutableList<T> items)
+    protected virtual void OnAddRange(int index, IReadOnlyList<T> items)
     {
         Items.InsertRange(index, items);
         RaiseRangeAdded(index, items);
@@ -230,6 +235,8 @@ public class NotifyCollection<T> : NotifyBase<T>, INotifyCollection<T>, IReadOnl
     /// <param name="newIndex">Новое расположение элемента.</param>
     protected virtual void OnMoveItem(int oldIndex, int newIndex)
     {
+        if (oldIndex == newIndex) return;
+
         T movedItem = Items[oldIndex];
 
         Items.RemoveAt(oldIndex);
@@ -238,12 +245,12 @@ public class NotifyCollection<T> : NotifyBase<T>, INotifyCollection<T>, IReadOnl
         RaiseItemMoved(oldIndex, newIndex, movedItem);
     }
 
-    /// <summary>Удаляет все элементы из коллекции и вызывает событие <see cref="INotify{T}.Reset"/>.</summary>
+    /// <summary>Удаляет все элементы из коллекции и вызывает событие <see cref="INotify{T}.CollectionCleared"/>.</summary>
     protected virtual void OnClearItems()
     {
-        ImmutableList<T> removedItems = [.. Items];
+        IReadOnlyList<T> removedItems = [.. Items];
         Items.Clear();
-        RaiseReset(removedItems);
+        RaiseCollectionCleared(removedItems);
     }
 
 
@@ -328,6 +335,8 @@ public class NotifyCollection<T> : NotifyBase<T>, INotifyCollection<T>, IReadOnl
 
     void ICollection.CopyTo(Array array, int index) => ((ICollection)Items).CopyTo(array, index);
 
+ 
+
     bool ICollection.IsSynchronized => ((ICollection)Items).IsSynchronized;
 
     object ICollection.SyncRoot => ((ICollection)Items).SyncRoot;
@@ -343,7 +352,7 @@ internal static class ImplementsListHelper<T>
         throw new ArgumentException($"The value '{value.GetType().FullName}' is not of type '{typeof(T).FullName}' and cannot be used in this generic collection.", nameof(value), innerException);
     }
 
-    public static bool IsCompatibleObject([NotNullWhen(true)] object? value)
+    public static bool IsCompatibleObject([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] object? value)
     {
         // Non-null values are fine.  Only accept nulls if T is a class or Nullable<U>.
         // Note that default(T) is not equal to null for value types except when T is Nullable<U>.

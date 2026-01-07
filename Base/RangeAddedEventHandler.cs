@@ -1,4 +1,6 @@
-﻿namespace Kritjara.Collections.Notify;
+﻿#pragma warning disable IDE0130 // Пространство имен (namespace) не соответствует структуре папок.
+
+namespace Kritjara.Collections;
 
 /// <summary>Представляет метод, обрабатывающий событие <see cref="INotify{T}.RangeAdded"/>.</summary>
 /// <param name="sender">Источник события.</param>
@@ -10,7 +12,7 @@ public interface IRangeAddedEventArgs<out T>
 {
 
     /// <summary>Добавленный в коллекцию диапазон элементов.</summary>
-    IReadOnlyList<T> AddedItems { get; }
+    IReadOnlyList<T> NewItems { get; }
   
     /// <summary>Индекс диапазона элементов.</summary>
     int Index { get; }
@@ -24,7 +26,7 @@ public class RangeAddedEventArgs<T>(IReadOnlyList<T> addedItems, int index) : Ev
 {
 
     /// <inheritdoc/>
-    public IReadOnlyList<T> AddedItems { get; } = addedItems;
+    public IReadOnlyList<T> NewItems { get; } = addedItems;
 
     /// <inheritdoc/>
     public int Index { get; } = index;

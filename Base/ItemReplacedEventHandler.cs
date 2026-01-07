@@ -1,4 +1,6 @@
-﻿namespace Kritjara.Collections.Notify;
+﻿#pragma warning disable IDE0130 // Пространство имен (namespace) не соответствует структуре папок.
+
+namespace Kritjara.Collections;
 
 /// <summary>Представляет метод, обрабатывающий событие <see cref="INotify{T}.ItemReplaced"/>.</summary>
 /// <param name="sender">Источник события.</param>
