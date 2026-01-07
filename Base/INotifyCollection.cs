@@ -1,13 +1,14 @@
-﻿using System.Runtime.CompilerServices;
+﻿#pragma warning disable IDE0130 // Пространство имен (namespace) не соответствует структуре папок.
 
-namespace Kritjara.Collections.Notify;
+using System.Runtime.CompilerServices;
+
+namespace Kritjara.Collections;
 
 /// <summary>Представляет коллекцию, оповещающую о добавлении/удалении ее элементов.</summary>
 /// <typeparam name="T">Тип объектов, содержащихся в коллекции.</typeparam>
 [CollectionBuilder(typeof(NotifyFactory), nameof(NotifyFactory.CreateNotifyCollection))]
 public interface INotifyCollection<T> : INotify<T>, IList<T>
 {       
-
     /// <summary>Добавляет диапазон элементов в коллекцию.</summary>
     /// <param name="items">Источник, содержащий элементы для добавления.</param>
     void AddRange(IEnumerable<T> items);
@@ -25,4 +26,7 @@ public interface INotifyCollection<T> : INotify<T>, IList<T>
     /// <inheritdoc cref="List{T}.RemoveRange(int, int)"/>
     void RemoveRange(int index, int length);
 
+    /// <summary>Заменяет все текущие элементы коллекции на указанные.</summary>
+    /// <param name="enumerable">Диапазон новых элементов коллекции.</param>
+    void Reset(IEnumerable<T> enumerable);
 }

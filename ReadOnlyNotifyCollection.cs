@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 
-namespace Kritjara.Collections.Notify;
+namespace Kritjara.Collections;
 
 /// <summary>Представляет коллекцию только для чтения с оповещением о добавлении/удалении элементов.</summary>
 /// <typeparam name="T">Тип объектов, содержащихся в коллекции.</typeparam>
-public class ReadOnlyNotifyCollection<T> : NotifyBase<T>, IReadOnlyCollection<T>, IReadOnlyNotifyCollection<T>, IReadOnlyList<T>
+public class ReadOnlyNotifyCollection<T> : NotifyBase<T>, IReadOnlyNotifyCollection<T>, IReadOnlyCollection<T>,  IReadOnlyList<T>
 {
     /// <summary>
     /// Основной источник элементов
@@ -25,7 +24,7 @@ public class ReadOnlyNotifyCollection<T> : NotifyBase<T>, IReadOnlyCollection<T>
         Items.RangeRemoved += Items_RangeRemoved;
         Items.ItemReplaced += Source_ItemReplaced;
         Items.ItemMoved += Source_ItemMoved;
-        Items.Reset += Source_Cleared;
+        Items.CollectionCleared += Source_Cleared;
     }
 
     private void Source_ItemAdded(object sender, IItemAddedEventArgs<T> e) => RaiseItemAdded(e);
@@ -34,7 +33,7 @@ public class ReadOnlyNotifyCollection<T> : NotifyBase<T>, IReadOnlyCollection<T>
     private void Items_RangeRemoved(object sender, IRangeRemovedEventArgs<T> e) => RaiseRangeRemoved(e);
     private void Source_ItemReplaced(object sender, IItemReplacedEventArgs<T> e) => RaiseItemReplaced(e);
     private void Source_ItemMoved(object sender, IItemMovedEventArgs<T> e) => RaiseItemMoved(e);
-    private void Source_Cleared(object sender, ICollectionResetEventArgs<T> e) => RaiseReset(e);
+    private void Source_Cleared(object sender, ICollectionClearedEventArgs<T> e) => RaiseCollectionCleared(e);
 
     /// <inheritdoc/>
     public T this[int index] => Items[index];
