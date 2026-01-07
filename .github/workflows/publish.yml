@@ -34,15 +34,15 @@ jobs:
 
     # 4. ¬Œ——“¿ÕŒ¬À≈Õ»≈ NuGet Ô‡ÍÂÚÓ‚
     - name: Restore
-      run: dotnet restore Kritjara.Collections.Notify.csproj
+      run: dotnet restore Kritjara.Collections.csproj
 
     # 5. Build project
     - name: Build
-      run: dotnet build Kritjara.Collections.Notify.csproj --configuration Release --no-restore -p:Version=${{ steps.get_version.outputs.VERSION }}
+      run: dotnet build Kritjara.Collections.csproj --configuration Release --no-restore -p:Version=${{ steps.get_version.outputs.VERSION }}
 
     # 6. Create NuGet package
     - name: Pack
-      run: dotnet pack Kritjara.Collections.Notify.csproj --configuration Release --no-build -p:Version=${{ steps.get_version.outputs.VERSION }} --output ./nupkg
+      run: dotnet pack Kritjara.Collections.csproj --configuration Release --no-build -p:Version=${{ steps.get_version.outputs.VERSION }} --output ./nupkg
 
     # 7. Publish to GitHub Packages
     - name: Publish to GitHub Packages
@@ -52,5 +52,5 @@ jobs:
     - name: Verify publication
       run: |
         echo "? Package version ${{ steps.get_version.outputs.VERSION }} published successfully!"
-        echo "?? Package: Kritjara.Collections.Notify"
+        echo "?? Package: Kritjara.Collections"
         echo "??? Version: ${{ steps.get_version.outputs.VERSION }}"

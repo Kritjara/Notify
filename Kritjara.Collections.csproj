@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
+	<NoWarn>$(NoWarn);IDE0290</NoWarn>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	  
 	<PackageId>Kritjara.Collections.Notify</PackageId>
@@ -24,5 +25,9 @@
 	<IncludeSymbols>true</IncludeSymbols>
 	<SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Mods\Filter\" />
+  </ItemGroup>
 	
 </Project>
