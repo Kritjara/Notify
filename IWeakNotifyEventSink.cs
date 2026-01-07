@@ -41,3 +41,32 @@ public interface IWeakNotifyEventSink<T>
     /// <param name="e">Данные события.</param>
     void CollectionCleared(INotify<T> sender, ICollectionClearedEventArgs<T> e);
 }
+
+
+
+/// <summary>
+/// Определяет методы для обработки событий объекта типа <see cref="INotify{TKey, TValue}"/>. 
+/// Предназначен для использования как приемник (sink) событий в менеджере слабых событий <see cref="NotifyWeakEventManager{TKey, TValue}"/>.
+/// </summary>
+public interface IWeakNotifyEventSink<TKey, TValue> where TKey : notnull
+{
+    /// <summary>Уведомляет получаля о произошедшем событии <see cref="INotify{TKey, TValue}.ItemAdded"/> в источнике</summary>
+    /// <param name="sender">Объект - источник события</param>
+    /// <param name="e">Данные события.</param>
+    void ItemAdded(INotify<TKey, TValue> sender, IItemAddedEventArgs<TKey, TValue> e);
+
+    /// <summary>Уведомляет получаля о произошедшем событии <see cref="INotify{TKey, TValue}.ItemRemoved"/> в источнике</summary>
+    /// <param name="sender">Объект - источник события</param>
+    /// <param name="e">Данные события.</param>
+    void ItemRemoved(INotify<TKey, TValue> sender, IItemRemovedEventArgs<TKey, TValue> e);
+
+    /// <summary>Уведомляет получаля о произошедшем событии <see cref="INotify{TKey, TValue}.KeyValueChanged"/> в источнике</summary>
+    /// <param name="sender">Объект - источник события</param>
+    /// <param name="e">Данные события.</param>
+    void KeyValueChanged(INotify<TKey, TValue> sender, IKeyValueChangedEventArgs<TKey, TValue> e);
+
+    /// <summary>Уведомляет получаля о произошедшем событии <see cref="INotify{TKey, TValue}.DictionaryCleared"/> в источнике</summary>
+    /// <param name="sender">Объект - источник события</param>
+    /// <param name="e">Данные события.</param>
+    void DictionaryCleared(INotify<TKey, TValue> sender, IDictionaryClearedEventArgs<TKey, TValue> e);
+}

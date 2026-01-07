@@ -206,3 +206,178 @@ public static class NotifyWeakEventManager<T>
         return liveHandlers ?? Enumerable.Empty<IWeakNotifyEventSink<T>>();
     }
 }
+
+
+
+/// <summary>
+/// Предоставляет механизм слабой подписки на события <see cref="INotify{TKey, TValue}"/>
+/// </summary>
+public static class NotifyWeakEventManager<TKey, TValue> where TKey : notnull
+{
+    // Таблица: источник -> список слабых ссылок на обработчики
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<INotify<TKey, TValue>, List<WeakReference<IWeakNotifyEventSink<TKey, TValue>>>> _handlers = [];
+
+    /// <summary>
+    /// Добавляет слабого подписчика на события <see cref="INotify{TKey, TValue}"/> источника.
+    /// </summary>
+    /// <param name="target">Источник события.</param>
+    /// <param name="subscriber">Подписчик на события.</param>
+
+    public static void Subscribe(INotify<TKey, TValue> target, IWeakNotifyEventSink<TKey, TValue> subscriber)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(subscriber);
+
+        // Получаем или создаем список handlers для источника
+        List<WeakReference<IWeakNotifyEventSink<TKey, TValue>>> handlers = _handlers.GetOrCreateValue(target);
+        lock (handlers)
+        {
+            // Проверяем, есть ли уже этот subscriber (чтобы избежать дубликатов)
+            bool alreadyExists = false;
+            foreach (var wr in handlers)
+            {
+                if (wr.TryGetTarget(out var existingHandler) && ReferenceEquals(existingHandler, subscriber))
+                {
+                    alreadyExists = true;
+                    break;
+                }
+            }
+
+            // Если дубликата нет, добавляем новую слабую ссылку
+            if (!alreadyExists)
+            {
+                handlers.Add(new WeakReference<IWeakNotifyEventSink<TKey, TValue>>(subscriber));
+                // Подписываемся на событие, если это первая подписка
+                if (handlers.Count == 1)
+                {
+                    AddHandlersToTarget(target);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Удаляет слабого подписчика на события <see cref="INotify{T}"/> источника.
+    /// </summary>
+    /// <param name="target">Источник события.</param>
+    /// <param name="subscriber">Подписчик на события.</param>
+    public static void Unsubscribe(INotify<TKey, TValue> target, IWeakNotifyEventSink<TKey, TValue> subscriber)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(subscriber);
+
+        // Получаем список handlers для источника (если он есть)
+        if (_handlers.TryGetValue(target, out var handlers))
+        {
+            lock (handlers)
+            {
+                handlers.RemoveAll(wr =>
+                {
+                    if (wr.TryGetTarget(out var existingHandler))
+                    {
+                        return existingHandler == subscriber;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                });
+
+                // Если список пуст, отписываемся от события
+                if (handlers.Count == 0)
+                {
+                    RemoveHandlersFromTarget(target);
+                }
+            }
+        }
+    }
+
+    private static void AddHandlersToTarget(INotify<TKey, TValue> target)
+    {
+        target.ItemAdded += OnItemAdded;
+        target.ItemRemoved += OnItemRemoved;
+        target.KeyValueChanged += OnKeyValueChanged;
+        target.DictionaryCleared += OnCollectionCleared;
+    }
+
+    private static void RemoveHandlersFromTarget(INotify<TKey, TValue> target)
+    {
+        target.ItemAdded -= OnItemAdded;
+        target.ItemRemoved -= OnItemRemoved;
+        target.KeyValueChanged -= OnKeyValueChanged;
+        target.DictionaryCleared -= OnCollectionCleared;
+    }
+
+    private static void OnItemAdded(object sender, IItemAddedEventArgs<TKey, TValue> e)
+    {
+        INotify<TKey, TValue> source = (INotify<TKey, TValue>)sender;
+
+        foreach (var handler in GetLiveHandlers(source))
+        {
+            handler.ItemAdded(source, e);
+        }
+    }
+
+    private static void OnItemRemoved(object sender, IItemRemovedEventArgs<TKey, TValue> e)
+    {
+        INotify<TKey, TValue> source = (INotify<TKey, TValue>)sender;
+
+        foreach (var handler in GetLiveHandlers(source))
+        {
+            handler.ItemRemoved(source, e);
+        }
+    }
+       
+    private static void OnKeyValueChanged(object sender, IKeyValueChangedEventArgs<TKey, TValue> e)
+    {
+        INotify<TKey, TValue> source = (INotify<TKey, TValue>)sender;
+
+        foreach (var handler in GetLiveHandlers(source))
+        {
+            handler.KeyValueChanged(source, e);
+        }
+    }
+       
+
+    private static void OnCollectionCleared(object sender, IDictionaryClearedEventArgs<TKey, TValue> e)
+    {
+        INotify<TKey, TValue> source = (INotify<TKey, TValue>)sender;
+
+        foreach (var handler in GetLiveHandlers(source))
+        {
+            handler.DictionaryCleared(source, e);
+        }
+    }
+
+
+    private static IEnumerable<IWeakNotifyEventSink<TKey, TValue>> GetLiveHandlers(INotify<TKey, TValue> source)
+    {
+        List<IWeakNotifyEventSink<TKey, TValue>>? liveHandlers = null;
+
+        if (_handlers.TryGetValue(source, out var handlers))
+        {
+            lock (handlers)
+            {
+                handlers.RemoveAll(wr => !wr.TryGetTarget(out _));
+
+                if (handlers.Count == 0)
+                {
+                    RemoveHandlersFromTarget(source);
+                }
+                else
+                {
+                    liveHandlers = new List<IWeakNotifyEventSink<TKey, TValue>>(handlers.Count);
+                    foreach (var wr in handlers)
+                    {
+                        if (wr.TryGetTarget(out var handler))
+                        {
+                            liveHandlers.Add(handler);
+                        }
+                    }
+                }
+            }
+        }
+        return liveHandlers ?? Enumerable.Empty<IWeakNotifyEventSink<TKey, TValue>>();
+    }
+      
+}
